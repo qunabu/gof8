@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <script type="module">
+        import { grid } from "./dist/main.js";
+
+        // console.log(grid, grid.grid());
+        // import grid from   "./node_modules/pixel-grid/index.js";
+        const toMatrix = (arr, width) =>
+            arr.reduce(
+                (rows, key, index) =>
+                (index % width == 0
+                    ? rows.push([key])
+                    : rows[rows.length - 1].push(key)) && rows,
+                []
+            );
+
+        const randomArray8 = (width, height) => new Int8Array(width * height).fill(0).map((row) => (Math.random() >= 0.7 ? 1 : 0));
+
+        const gol8 = (state, COLS) => {
+        return state.map((value, i) => {
+            const liveNeighbors = [
+            i - COLS - 1,
+            i - COLS,
+            i - COLS + 1,
+            i - 1,
+            i + 1,
+            i + COLS - 1,
+            i + COLS,
+            i + COLS + 1,
+            ].filter((neighbor) =>
+            state[neighbor] == undefined ? false : state[neighbor] == 1
+            ).length;
+            return value == 1
+            ? liveNeighbors == 2 || liveNeighbors == 3
+                ? 1
+                : 0
+            : liveNeighbors == 3
+            ? 1
+            : 0;
+        });
+        };
+
+        const init = (COLS, ROWS) => {
+        let state = randomArray8(COLS, ROWS);
+
+        const pixels = grid(toMatrix(state, COLS), {
+            root: document.body,
+            size: 4,
+            padding: 1,
+        });
+
+        console.log(pixels);
+
+        return () => {
+            state = gol8(state, COLS);
+            pixels.update(toMatrix(state, COLS));
+        };
+        };
+
+        const nextState = init(250, 250);
+
+        const nextFrame = () => {
+            nextState();
+            window.requestAnimationFrame(nextFrame);
+        };
+
+        nextFrame();
+
+        </script>
+</body>
+
+</html>
